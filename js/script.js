@@ -3,16 +3,22 @@ const headerInput = document.querySelector('.header-input')
 const todoList = document.querySelector('.todo-list')
 const todoCompleted = document.querySelector('.todo-completed')
 const todoRemove = document.querySelector('.todo-remove')
-const add = document.querySelector('add')
+
 
 const toDoData = []
 
+const displayLocalStorage = function () {
+  const toDoDataLocalStorage = localStorage.getItem('toDoData');
+  const arrayLocalStorage = JSON.parse(toDoDataLocalStorage);
+  toDoData.push.apply(toDoData, arrayLocalStorage);
+
+}
 const render = function () {
   todoList.innerHTML = ''
   todoCompleted.innerHTML = ''
-  todoRemove.innerHTML = ''
+  
 
-  toDoData.forEach(function (item) {
+  toDoData.forEach(function (item, index) {
    const li = document.createElement('li')
 
     li.classList.add('todo-item')
@@ -30,34 +36,27 @@ const render = function () {
        
 
     
-    
       li.querySelector('.todo-complete').addEventListener('click', function() {
        item.completed = !item.completed
-        localStorage.setItem('text', JSON.stringify(item.text))
-       render()
+        render()
+        localStorage.setItem('toDoData', JSON.stringify(toDoData))
       })
 
     li.querySelector('.todo-remove').addEventListener('click', function () {
       li.remove()
-      toDoData.splice(item, 1);
-    
+      toDoData.splice(index, 1);
+      localStorage.removeItem(index);
+      localStorage.setItem('toDoData', JSON.stringify(toDoData))
     })
       
-    if (item.text === '') {
-      li.remove()
-      toDoData.splice(item, 1);
-    } else {
-      return true
-    }
-
-    
-    if (localStorage.getItem('text'))
-    item.text = JSON.parse(localStorage.getItem('text'))
-    
+    if (toDoData.length == 0) {
+      localStorage.clear();
+    } 
   })
 }
 
 todoControl.addEventListener('submit', function (event) {
+  let isError = false;
   event.preventDefault()
 
 
@@ -66,9 +65,20 @@ const newToDo = {
   completed: false
 }
 
-toDoData.push(newToDo)
-headerInput.value = ''
+  if (headerInput.value === '') {
+    isError = true;
+  };
 
-render()
+  if (!isError) {
+    toDoData.push(newToDo);
+    headerInput.value = '';
+    
+    render();
+    
+  };
+  localStorage.setItem('toDoData', JSON.stringify(toDoData));
+});
 
-})
+displayLocalStorage();
+render();
+
